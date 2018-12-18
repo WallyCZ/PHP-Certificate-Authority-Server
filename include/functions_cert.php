@@ -27,7 +27,7 @@ $config=$_SESSION['config'];
 <tr><td width=100>Name:<td><select name="cert_name" rows="6">
 <option value="">--- Select a certificate
 <?php
-print "<option value=\"zzTHISzzCAzz\">This CA Certificate</option>\n";
+print "<option value=\"" . THIS_CA_CERT_NAME . "\">This CA Certificate</option>\n";
 $dh = opendir($config['cert_path']) or die('Unable to open ' . $config['cert_path']);
 while (($file = readdir($dh)) !== false) {
 	if ( ($file !== ".htaccess") && is_file($config['cert_path'].$file) )  {
@@ -46,26 +46,26 @@ while (($file = readdir($dh)) !== false) {
 }
 
 function download_cert($this_cert,$cer_ext) {
-$config=$_SESSION['config'];
-if (!isset($cer_ext)) 
-  $cer_ext='FALSE';
+  $config=$_SESSION['config'];
+  if (!isset($cer_ext)) 
+    $cer_ext='FALSE';
 
-if ($this_cert == "zzTHISzzCAzz" )
+  if ($this_cert == THIS_CA_CERT_NAME )
   {
-  $my_x509_parse = openssl_x509_parse(file_get_contents($config['cacert']));
-  $filename = $my_x509_parse['subject']['CN'].":".$my_x509_parse['subject']['OU'].":".$my_x509_parse['subject']['O'].":".$my_x509_parse['subject']['L'].":".$my_x509_parse['subject']['ST'].":".$my_x509_parse['subject']['C'];
-  $download_certfile = $config['cacert'];
-  $ext=".pem";
-  //$application_type="application/x-x509-ca-cert";
-  $application_type='application/octet-stream';
+    $my_x509_parse = openssl_x509_parse(file_get_contents($config['cacert']));
+    $filename = $my_x509_parse['subject']['CN'].":".$my_x509_parse['subject']['OU'].":".$my_x509_parse['subject']['O'].":".$my_x509_parse['subject']['L'].":".$my_x509_parse['subject']['ST'].":".$my_x509_parse['subject']['C'];
+    $download_certfile = $config['cacert'];
+    $ext=".pem";
+    //$application_type="application/x-x509-ca-cert";
+    $application_type='application/octet-stream';
   }
-else
+  else
   {
-  $filename = substr($this_cert, 0,strrpos($this_cert,'.'));
-  $ext=substr($this_cert, strrpos($this_cert,'.'));
-  $download_certfile = base64_encode($filename);
-  $download_certfile = $config['cert_path']. $download_certfile.$ext;
-  $application_type='application/octet-stream';
+    $filename = substr($this_cert, 0,strrpos($this_cert,'.'));
+    $ext=substr($this_cert, strrpos($this_cert,'.'));
+    $download_certfile = base64_encode($filename);
+    $download_certfile = $config['cert_path']. $download_certfile.$ext;
+    $application_type='application/octet-stream';
   }
 
 if ($cer_ext != 'FALSE') 
@@ -324,23 +324,30 @@ else
 }
 
 
-function view_cert($my_certfile) {
-$config=$_SESSION['config'];
-if ($my_certfile == "zzTHISzzCAzz" )
+function parse_cert($my_certfile) {
+  $config=$_SESSION['config'];
+  if ($my_certfile == THIS_CA_CERT_NAME )
   {
-  $my_cert = openssl_x509_parse(file_get_contents($config['cacert']));
+    $my_cert = openssl_x509_parse(file_get_contents($config['cacert']));
   }
-else
+  else
   {
-  $name = base64_encode(substr($my_certfile, 0,strrpos($my_certfile,'.')));
-  $ext = substr($my_certfile, strrpos($my_certfile,'.'));
-  $my_base64_certfile=$name.$ext;
-  $my_cert = openssl_x509_parse(file_get_contents($config['cert_path'].$my_base64_certfile));
+    $name = base64_encode(substr($my_certfile, 0,strrpos($my_certfile,'.')));
+    $ext = substr($my_certfile, strrpos($my_certfile,'.'));
+    $my_base64_certfile=$name.$ext;
+    $my_cert = openssl_x509_parse(file_get_contents($config['cert_path'].$my_base64_certfile));
   }
 
-print "<h1>Viewing certificate request</h1>";
-print get_cert_html($my_cert);
-print "\n\n<br><br><b>Completed.</b><br/>";
+  return $my_cert;
+}
+
+function view_cert($my_certfile) {
+  
+  $my_cert = parse_cert($my_certfile);
+
+  print "<h1>Viewing certificate request</h1>";
+  print get_cert_html($my_cert);
+  print "\n\n<br><br><b>Completed.</b><br/>";
 }
 
 function get_cert_html($my_cert) {
@@ -377,6 +384,19 @@ $this_html .= "<tr><th>Signature Type LN</th><td>".$my_cert['signatureTypeLN']."
 $this_html .= "<tr><th>Signature Type NID</th><td>".$my_cert['signatureTypeNID']."</td></tr>";
 $this_html .= "</table>";
 return $this_html;
+}
+
+
+// ==================================================================================================================
+// =================== is_cert_selfsigned =====================================================================================
+// ==================================================================================================================
+
+
+function is_cert_selfsigned($parsed_cert){
+ 
+  //compare issuer and subject
+
+  return count (array_diff_assoc($parsed_cert['issuer'], $parsed_cert['subject']) ) == 0;
 }
 
 ?>

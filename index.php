@@ -226,7 +226,9 @@ switch ($menuoption) {
 
     case "createCSR":
         printHeader('Creating the CSR');
-        create_csr($page_variables['cert_dn'],$page_variables['cert_dn']['keySize'],$page_variables['passphrase'],$page_variables['device_type']);
+        $cer_dn = $page_variables['cert_dn'];
+        $my_keysize = $page_variables['keySize'];
+        create_csr($cer_dn, $my_keysize, $page_variables['passphrase'], $page_variables['device_type'], NULL);
         printFooter();
     break;
 
@@ -289,7 +291,7 @@ switch ($menuoption) {
         $config=update_config();
         $_SESSION['config']=$config;
         printHeader('Creating new Root CA - Part 2');
-        create_ca($config['certstore_path'], $page_variables['device_type'],$page_variables['cert_dn'],$page_variables['passphrase']);  
+        create_ca($config['certstore_path'], $page_variables['keySize'], $page_variables['device_type'],$page_variables['cert_dn'],$page_variables['passphrase']);  
     break;
 
 	case "delete_ca_form":
@@ -318,6 +320,16 @@ switch ($menuoption) {
 		printHeader('Delete a CA');
 		delete_ca($config['certstore_path'],$page_variables['ca_name']);  
 	break;
+
+    case "renew_ca_form":
+        printHeader('Creating new Root CA - Part 2');
+        renew_ca_form();
+    break;
+
+    case "renew_ca":
+        printHeader('Renew CA');
+        renew_ca($page_variables['passphrase'], $page_variables['cert_dn'], $page_variables['keySize']);
+    break;
 
     case "view_cert_details_form":
         printHeader('View Certificate Details');

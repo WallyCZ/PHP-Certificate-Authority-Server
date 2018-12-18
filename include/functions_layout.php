@@ -125,6 +125,7 @@ print "<li><a href=\"#\">CA Functions</a>\n";
 print "<ul>\n";
 print "<li><a href=\"index.php?menuoption=switchca_form\">Switch to a different CA</a></li>\n";
 print "<li><a href=\"index.php?menuoption=download_crl_form\">Download CRL</a></li>\n";
+print "<li><a href=\"index.php?menuoption=renew_ca_form\">Renew CA Certificate</a></li>\n";
 print "<li><a href=\"index.php?menuoption=delete_ca_form\">Delete CA</a></li>\n";
 print "</ul>\n</li>\n";
 print "<li><a href=\"index.php?menuoption=show_summary\">Show Summary</a></li>\n";

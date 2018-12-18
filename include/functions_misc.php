@@ -31,10 +31,10 @@ return $my_valid_cert;
 }
 
 
-function checkError($result) {
+function checkError($result, $errMsg) {
 	if (!$result) {
 		while (($error = openssl_error_string()) !== false) {
-			if ($error == "error:0E06D06C:configuration file routines:NCONF_get_string:no value") {
+			if (substr( $error, 0, 15 )  === "error:0E06D06C:") {
 				if ($nokeyError++ == 0) {
 					$errors .= "One or more configuration variables could not be found (possibly non-fatal)<br/>\n";
 				}
@@ -46,9 +46,10 @@ function checkError($result) {
 		}
 	}
 	if ($errorCount or (!$result and $nokeyError)) {
-		print "FATAL: An error occured in the script. Possibly due to a misconfiguration.<br/>\nThe following errors were reported during execution:<br/>\n$errors";
+		print "FATAL: " .$errMsg. "<br/>\nThe following errors were reported during execution:<br/>\n$errors";
 		exit();
 	}
+	return $result;
 }
 
 
@@ -109,5 +110,20 @@ function get_KeyValue($haystack = array(), $needle = '', $default_value = false)
 	} else {
 		return $default_value;
 	}
+}
 
+
+function get_OpensslKeyType( $openssl_key_type ) {
+	switch($openssl_key_type)
+	{
+		case OPENSSL_KEYTYPE_RSA:
+			return "RSA";
+		case OPENSSL_KEYTYPE_EC:
+			return "EC";
+	}
+	return "Unknown";
+}
+
+function clear_openssl_errors() {
+	while (($e = openssl_error_string()) !== false);
 }

@@ -1,6 +1,9 @@
 <?PHP
+
+define("THIS_CA_CERT_NAME", "zzTHISzzCAzz");
+
 function update_config() {
-$config['certstore_path']="NOT_DEFINED";
+$config['certstore_path']="/etc/ca/";
 if (isset($_SESSION['config']) and isset($_SESSION['my_ca']) )
   $config['ca_path'] = $config['certstore_path'].$_SESSION['my_ca']."/";
 else

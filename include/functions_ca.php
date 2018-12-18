@@ -112,7 +112,7 @@ $_SESSION['my_ca']='create_ca';
 <tr><th>City</th><td><input type="text" name="cert_dn[localityName]" value="Beverly Hills" size="25"></td></tr>
 <tr><th>State</th><td><input type="text" name="cert_dn[stateOrProvinceName]" value="California" size="25"></td></tr>
 <tr><th>Country</th><td><input type="text" name="cert_dn[countryName]" value="US" size="2"></td></tr>
-<tr><th>Key Size</th><td><input type="radio" name="cert_dn[keySize]" value="1024" /> 1024bits <input type="radio" name="cert_dn[keySize]" value="2048" /> 2048bits<input type="radio" name="cert_dn[keySize]" value="4096" checked /> 4096bits</td></tr>
+<tr><th>Key Size</th><td><input type="radio" name="keySize" value="1024" /> 1024bits <input type="radio" name="keySize" value="2048" /> 2048bits<input type="radio" name="keySize" value="4096" checked /> 4096bits</td></tr>
 <tr><th>Number of Days</th><td><input type="text" name="cert_dn[days]" size="4" value="7300" /></td></tr>
 <tr><th>Certificate Passphrase</th><td><input type="password" name="passphrase"/></td></tr>
 <tr><td><td><input type="submit" value="Create Root CA"/>
@@ -124,7 +124,7 @@ $_SESSION['my_ca']='create_ca';
 }
 
 
-function create_ca($my_certstore_path, $my_device_type,$my_cert_dn,$my_passphrase) {
+function create_ca($my_certstore_path, $my_keysize, $my_device_type,$my_cert_dn,$my_passphrase) {
 
 //if (!is_dir($my_certstore_path.$my_cert_dn['commonName']))
   create_cert_store($my_certstore_path, $my_cert_dn['commonName']);
@@ -132,10 +132,8 @@ function create_ca($my_certstore_path, $my_device_type,$my_cert_dn,$my_passphras
 //  die('Fatal: CA Store already exists for '. $my_cert_dn['commonName']);
 
 $my_days=$my_cert_dn['days'];
-$my_keysize=$my_cert_dn['keySize'];
 unset($my_cert_dn['days']);
-unset($my_cert_dn['keySize']);
-$my_csrfile=create_csr($my_cert_dn,$my_keysize,$my_passphrase,$my_device_type);
+$my_csrfile=create_csr($my_cert_dn, $my_keysize, $my_passphrase, $my_device_type, NULL);
 sign_csr($my_passphrase,$my_csrfile,$my_days,$my_device_type);
 //to do, check sign_csr code for device type
 }
@@ -220,4 +218,56 @@ else {
 }
 
 
+function renew_ca_form() {
+  ?>
+  <p>
+  <b>Renew Root Certificate Authority</b><br/>
+  <?PHP
+    $my_cert = parse_cert(THIS_CA_CERT_NAME);
+    if(! is_cert_selfsigned($my_cert))  
+    {
+      print ("Only root certificates can be renewed by this function");
+      return;
+    }
+
+  ?>
+  <form action="index.php" method="post">
+    <input type="hidden" name="menuoption" value="renew_ca"/>
+  <input type="hidden" name="device_type" value="ca_cert"/>
+  
+  <table  style="width: 400px;">
+  <tr><th width=100>Common Name (eg root-ca.golf.local)</th><td><input type="text" name="cert_dn[commonName]" value="<?= $my_cert['subject']['CN'] ?>" size="40"></td></tr>
+  <tr><th>Contact Email Address</th><td><input type="text" name="cert_dn[emailAddress]" value="<?= $my_cert['subject']['emailAddress'] ?>" size="30"></td></tr>
+  <tr><th>Organizational Unit Name</th><td><input type="text" name="cert_dn[organizationalUnitName]" value="<?= $my_cert['subject']['OU'] ?>" size="30"></td></tr>
+  <tr><th>Organization Name</th><td><input type="text" name="cert_dn[organizationName]" value="<?= $my_cert['subject']['O'] ?>" size="25"></td></tr>
+  <tr><th>City</th><td><input type="text" name="cert_dn[localityName]" value="<?= $my_cert['subject']['L'] ?>" size="25"></td></tr>
+  <tr><th>State</th><td><input type="text" name="cert_dn[stateOrProvinceName]" value="<?= $my_cert['subject']['ST'] ?>" size="25"></td></tr>
+  <tr><th>Country</th><td><input type="text" name="cert_dn[countryName]" value="<?= $my_cert['subject']['C'] ?>" size="2"></td></tr>
+  <tr><th>Number of Days</th><td><input type="text" name="cert_dn[days]" size="4" value="7300" /></td></tr>
+  <tr><th>Certificate Passphrase</th><td><input type="password" name="passphrase"/></td></tr>
+  <tr><th>Keep old private key</th><td><input type="checkbox" name="keep_key" checked/></td></tr>
+  <tr><td><td><input type="submit" value="Renew Root CA"/>
+  </table>
+  </form> 
+  </p>
+  <?PHP
+}
+
+function renew_ca($my_passphrase, $my_cert_dn, $my_keysize){
+  //openssl req -new -key root.key -out newcsr.csr
+  //openssl x509 -req -days 3650 -in newcsr.csr -signkey root.key -out newroot.pem
+  //rm newcsr.csr
+  $my_cert = parse_cert(THIS_CA_CERT_NAME);
+  if(! is_cert_selfsigned($my_cert))  
+  {
+    print ("Only root certificates can be renewed by this function");
+    return;
+  }
+  $config=$_SESSION['config'];
+  $my_days=$my_cert_dn['days'];
+  unset($my_cert_dn['days']);
+  $my_csrfile=create_csr($my_cert_dn, $my_keysize, $my_passphrase, "ca_cert", $config['cakey']);
+  sign_csr($my_passphrase, $my_csrfile, $my_days, "ca_cert");
+}
+  
 ?>

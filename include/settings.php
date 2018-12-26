@@ -2,6 +2,11 @@
 
 define("THIS_CA_CERT_NAME", "zzTHISzzCAzz");
 
+//fill all env. variables used in openssl.config with empty values
+putenv('PHP_PASS_SUBJECTALTNAME=');
+putenv('PHP_PASS_KEYUSAGE=nonRepudiation, digitalSignature, keyEncipherment');
+
+
 function update_config() {
 $config['certstore_path']="/etc/ca/";
 if (isset($_SESSION['config']) and isset($_SESSION['my_ca']) )

@@ -71,6 +71,16 @@ print "<h1>Creating Client CSR and Client Key</h1>";
 
 print "<b>Checking your DN (Distinguished Name)...</b><br/>";
 print "<pre>DN = ".var_export($cert_dn,1)."</pre>";
+
+if( !empty($my_cert_dn['subjectAltName']) ) {
+  print "<b>Adding subjectAltName</b><br/>";
+  putenv('PHP_PASS_SUBJECTALTNAME=' . $my_cert_dn['subjectAltName']);
+  $config['req_extensions'] = 'v3_req_subj_alt_name';
+} else {
+  putenv('PHP_PASS_SUBJECTALTNAME=email:' .$my_cert_dn['emailAddress']);
+}
+
+
 if(empty ($my_keyfile_path)) {
   print "<b>Generating new key...</b><br/>";
   print $my_keysize."<br/>";
@@ -95,7 +105,7 @@ if(empty ($my_keyfile_path)) {
 }
 
 print "<b>Creating CSR...</b><br/>";
-$my_csr = checkError(openssl_csr_new($cert_dn,$privkey,$config), 'Fatal: Error creating CSR');
+$my_csr = checkError(openssl_csr_new($cert_dn, $privkey, $config), 'Fatal: Error creating CSR');
 print "Done<br/><br/>\n";
 
 if (0 === strpos($config['config'], sys_get_temp_dir())) {
@@ -547,12 +557,12 @@ print "<b>Signing CSR...</b><br/>";
 $my_serial=sprintf("%04d",get_serial());
  
 if (isset($csrDetails['subjectAltName'])) {
-  $sanValues = explode(',', $csrDetails['subjectAltName']);
-  $sanValues[] = $csrDetails['CN'];
-  $my_csr['subjectAltName'] = $csrDetails['subjectAltName'];
+  //$sanValues = explode(',', $csrDetails['subjectAltName']);
+
   print "CSR contains Subject Alternative Names - ". $csrDetails['subjectAltName']."</br>\n";
+  putenv('PHP_PASS_SUBJECTALTNAME=' . $csrDetails['subjectAltName']);
 } else {
-  $sanValues[] = $csrDetails['CN'];
+  putenv('PHP_PASS_SUBJECTALTNAME=email:' .$csrDetails['emailAddress']);
 }
 
 //print("<pre>");print_r($config);print("</pre>");

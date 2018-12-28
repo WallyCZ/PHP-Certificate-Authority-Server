@@ -331,6 +331,21 @@ switch ($menuoption) {
         renew_ca($page_variables['passphrase'], $page_variables['cert_dn'], $page_variables['keySize']);
     break;
 
+    case "edit_ca_config_form":
+        printHeader('Edit CA config');
+        edit_ca_config_form();
+    break;
+
+    case "edit_ca_config_save":
+        printHeader('Save CA config');
+        edit_ca_config_save($page_variables['ca_config_text']);
+    break;    
+
+    case "edit_ca_config_reset":
+        printHeader('Restore original config');
+        edit_ca_config_reset();
+    break;    
+
     case "view_cert_details_form":
         printHeader('View Certificate Details');
         view_cert_details_form();

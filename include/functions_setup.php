@@ -88,32 +88,25 @@ fclose($fp)or die('Unable to close write Index file '.$config['index']);
 print "Done.\n<br><br>";
 
 print "Creating openssl.conf file for this CA\n<br>";
-$orig_fp = fopen('./include/openssl.conf',"r") or die('Unable to open OPENSSL.CONF template');
-$new_fp = fopen($config['config'],"w") or die('Unable to open OPENSSL.CONF new file');
-
-while (!feof($orig_fp)) {
-   $this_line = rtrim(fgets($orig_fp));
-   if ( strpos($this_line,'ZZ_REPLACE_ME_ZZ') )
-     $this_line = str_replace('ZZ_REPLACE_ME_ZZ',substr($config['ca_path'],0,-1),$this_line);
-   fwrite($new_fp,$this_line."\n");
-}
-fclose($orig_fp);
-fclose($new_fp);
+install_openssl_config($config);
 print "Done\n<br><br>";
 print "Certstore files and folders created successfully.<br><br>\n";
 }
 
-/*
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+
+function install_openssl_config($config)
 {
-    echo 'This server currently running PHP is using Windows!';
-    define("INCLUDE_DIR","c:\include");
+  $orig_fp = fopen('./include/openssl.conf',"r") or die('Unable to open OPENSSL.CONF template');
+  $new_fp = fopen($config['config'],"w") or die('Unable to open OPENSSL.CONF new file');
+  
+  while (!feof($orig_fp)) {
+     $this_line = rtrim(fgets($orig_fp));
+     if ( strpos($this_line,'ZZ_REPLACE_ME_ZZ') )
+       $this_line = str_replace('ZZ_REPLACE_ME_ZZ',substr($config['ca_path'],0,-1),$this_line);
+     fwrite($new_fp,$this_line."\n");
+  }
+  fclose($orig_fp);
+  fclose($new_fp);  
 }
-else
-{
-    echo 'This server currently running PHP is not using Windows!';
-    define("INCLUDE_DIR", "/include");
-}
-*/
 
 ?>

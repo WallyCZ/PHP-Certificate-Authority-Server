@@ -2,6 +2,12 @@
 
 define("THIS_CA_CERT_NAME", "zzTHISzzCAzz");
 
+define("PHPCA_DEVICE_SECTION_NAME", "phpca_cert_");
+
+define("CA_CERT_DEVICE", "ca");
+define("SUBCA_CERT_DEVICE", "subca");
+
+
 //fill all env. variables used in openssl.config with empty values
 putenv('PHP_PASS_SUBJECTALTNAME=');
 putenv('PHP_PASS_KEYUSAGE=nonRepudiation, digitalSignature, keyEncipherment');

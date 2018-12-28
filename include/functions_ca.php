@@ -269,5 +269,44 @@ function renew_ca($my_passphrase, $my_cert_dn, $my_keysize){
   $my_csrfile=create_csr($my_cert_dn, $my_keysize, $my_passphrase, "ca_cert", $config['cakey']);
   sign_csr($my_passphrase, $my_csrfile, $my_days, "ca_cert");
 }
+
+function edit_ca_config_form() {
+  $config=$_SESSION['config'];
+    ?>
+  <p>
+  <b>Edit CA config</b><br/>
+  <form action="index.php" method="post">
+    <input type="hidden" name="menuoption" value="edit_ca_config_save"/>
   
+  <table  style="width: 400px;">
+  <tr><td><textarea name="ca_config_text" cols=100 rows=20><?= file_get_contents($config['config'])?> </textarea></td></tr>
+  <tr><td><input type="submit" value="Save CA config"/></td>
+  </table>
+  </form> 
+  <form action="index.php" method="post">
+    <input type="hidden" name="menuoption" value="edit_ca_config_reset"/>
+    <input type="submit" style="margin-top: 20px;" value="Restore original CA config"/></td>
+  </form> 
+  </p>
+  <?PHP
+}
+
+function edit_ca_config_save($new_config_content) {
+  $config=$_SESSION['config'];
+
+  $new_fp = fopen($config['config'],"w") or die('Unable to open OPENSSL.CONF new file');
+  
+  fwrite($new_fp, $new_config_content);
+  fclose($new_fp);  
+
+  edit_ca_config_form();
+}
+
+function edit_ca_config_reset() {
+  $config=$_SESSION['config'];
+  install_openssl_config($config);
+  edit_ca_config_form();
+}
+
+
 ?>
